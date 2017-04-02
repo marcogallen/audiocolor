@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Audio to colors analyser</title>
+	<style type="text/css">
+		/*.color-container {
+			border:1px solid #EDEDED;
+			width:600px;
+			height:60px;
+			background-color:#FF0000;
+		}*/
+
+		#color-holder {
+			width:700px;
+			height:700px;
+			border:1px solid #EDEDED;
+		}
+		.imgHolder {
+			border:1px solid #EDEDED;
+			margin:5px;
+		}
+
+		.audio-selector {
+			margin:10px 0;
+		}
+	</style>
+
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+	<script
+  src="https://code.jquery.com/jquery-3.2.1.min.js"crossorigin="anonymous"></script>
+
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+</head>
+<body>
+<div class="container">
+	<h1>Welcome to the audio color</h1>
+	<audio id="audio_track" src="amigos-invisibles.mp3">
+		<!--<source src="amigos-invisibles.mp3" type="audio/mpeg" >-->
+		
+	</audio>
+	<div class="audio-selector">
+		<select id="sel-audio">
+			<option value="0">-- Select an option --</option>
+			<option value="amigos-invisibles.mp3">Amigos Invisibles - La que me gusta</option>
+			<option value="steven-thunder.mp3">Steven's Seaguls - Thunderstruck</option>
+			<option value="mraz-yours.mp3">Jason Mraz - I'm yours</option>
+			
+		</select>
+	</div>
+
+	<div class="row">
+		<div class=col-md-8>
+			<canvas class="color-container" id="color-holder" width="700" height="700">
+			
+			</canvas>
+		</div>
+		<div class="col-md-4">
+			<div id="imgHistory">
+				
+			</div>
+		</div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+	window.onload = function(){
+		//console.log("Ready");
+		window.AudioContext = window.AudioContext || window.webkitAudioContext;
+		var ctx = new AudioContext();
+		var audio = document.getElementById("audio_track");
+
+		var audioSrc = ctx.createMediaElementSource(audio);
+		var analyser = ctx.createAnalyser();
+		analyser.fftSize  = 256;
+
+		audioSrc.connect(analyser);
+		audioSrc.connect(ctx.destination);
+
+		var selector = document.getElementById('sel-audio');
+
+		selector.addEventListener('change', function(){
+			//console.log(this);
+			var selected = this.options[this.selectedIndex].value;
+			console.log(selected);
+
+			audio.src = selected;
+			clearCanvas();
+			audio.play();
+		  	renderFrame();
+		});
+
+		audio.addEventListener('endend',function(){
+			console.log('Ended');
+		});
+
+		//var frequencyData = new Uint8Array(analyser.frequencyBinCount);
+		var frequencyData = new Float32Array(analyser.frequencyBinCount);
+
+		//Paint the sounds with nice colors
+		var canvas = document.getElementById("color-holder");
+		var cctx = canvas.getContext('2d');
+
+		var canvasWidth = 700;
+		var canvasHeight = 700;
+		var w = 10;
+		var h = 10;
+
+		var margin = 1;
+
+		var x = 0;//w + margin;
+		var y = 0;//h + margin;
+		
+
+		function drawRectangle (color) {
+			cctx.fillStyle = color;
+			cctx.fillRect(x,y,w,h);
+		}	
+
+
+		//analyser.getByteFrequencyData(frequencyData);
+		//console.log(frequencyData);
+
+		function getChord (frequency){
+			var chordObj = {color:0, chord: 'nac'};
+			switch (frequency){
+				case 82:
+				case 32:
+					chordObj.color = '#7C377C'
+					chordObj.chord = 'E';
+					break;
+				case 164:
+					chordObj.color = '#FA6FFC'
+					chordObj.chord = 'E';
+					break;
+				case 329:
+					chordObj.color = '#E164E2'
+					chordObj.chord = 'E';
+					break;
+				case 659:
+					chordObj.color = '#3C1B3D'
+					chordObj.chord = 'E';
+					break;
+
+				case 87:
+					chordObj.color = '#003D09';
+					chordObj.chord = 'F';
+					break;
+				case 174:
+					chordObj.color = '#02FC25';
+					chordObj.chord = 'F';
+					break;
+				case 349:
+
+					chordObj.color = '#017C12';
+					chordObj.chord = 'F';
+					break;
+
+				case 92:
+					chordObj.color = '#035845';
+					chordObj.chord = 'F#';
+					break;
+				case 185:
+					chordObj.color = '#03654F';
+					chordObj.chord = 'F#';
+					break;
+				case 370:
+					chordObj.color = '#06A481';
+					chordObj.chord = 'F#';
+					break;
+
+				case 98:
+					chordObj.color = '#FC0202';
+					chordObj.chord = 'G';
+					break;
+				case 196:
+					chordObj.color = '#3D0000';
+					chordObj.chord = 'G';
+					break;
+				case 392:
+					chordObj.color = '#7C0101';
+					chordObj.chord = 'G';
+					break;
+
+				case 103:
+					chordObj.color = '#10186A';
+					chordObj.chord = 'G#';
+					break;
+				case 207:
+					chordObj.color = '#0C1250';
+					chordObj.chord = 'G#';
+					break;
+				case 415:
+					chordObj.color = '#1C29B6';
+					chordObj.chord = 'G#';
+					break;
+
+				case 110:
+					chordObj.color = '#FBF5AD';
+					chordObj.chord = 'A';
+					break;
+				case 220:
+					chordObj.color = '#7B7955';
+					chordObj.chord = 'A';
+					break;
+				case 440:
+					chordObj.color = '#3C3A29';
+					chordObj.chord = 'A';
+					break;
+
+				case 116:
+					chordObj.color = '#02F3FC';
+					chordObj.chord = 'A#';
+					break;
+				case 233:
+					chordObj.color = '#02DAE2';
+					chordObj.chord = 'A#';
+					break;
+				case 466:
+					chordObj.color = '#003B3D';
+					chordObj.chord = 'A#';
+					break;
+
+				case 123:
+					chordObj.color = '#DBC0F4';
+					chordObj.chord = 'B';
+					break;
+				case 246:
+					chordObj.color = '#C4ACDA';
+					chordObj.chord = 'B';
+					break;
+				case 493:
+					chordObj.color = '#2F2A35';
+					chordObj.chord = 'B';
+					break;
+
+				case 130:
+					chordObj.color = '#FDCB03';
+					chordObj.chord = 'C';
+					break;
+				case 261:
+					chordObj.color = '#E3B703';
+					chordObj.chord = 'C';
+					break;
+				case 523:
+					chordObj.color = '#7D6501';
+					chordObj.chord = 'C';
+					break;
+
+				case 138:
+					chordObj.color = '#34034B';
+					chordObj.chord = 'C#';
+					break;
+				case 277:
+					chordObj.color = '#3D0458';
+					chordObj.chord = 'C#';
+					break;
+				case 554:
+					chordObj.color = '#690697';
+					chordObj.chord = 'C#';
+					break;
+
+				case 146:
+					chordObj.color = '#03B3FD';
+					chordObj.chord = 'D';
+					break;
+				case 293:
+					chordObj.color = '#01597D';
+					chordObj.chord = 'D';
+					break;
+				case 622:
+					chordObj.color = '#012C3E';
+					chordObj.chord = 'D';
+					break;
+
+				case 155:
+					chordObj.color = '#F43806';
+					chordObj.chord = 'D#';
+					break;
+				case 311:
+					chordObj.color = '#DA3205';
+					chordObj.chord = 'D#';
+					break;
+				case 622:
+					chordObj.color = '#350C01';
+					chordObj.chord = 'D#';
+					break;
+				default:
+					var colorList =['#221D23','#4F3824','#D1603D','#DDB967','#D0E37F'];
+					chordObj.chord = frequency;
+					//chordObj.color = colorList[Math.floor(Math.random () * (5 - 1) + 1)];
+					chordObj.color = '#CECFC7';
+					break;
+
+			}
+			return chordObj;
+		}
+
+		function getChord2(frequency){
+			var chordObj = {color:0, chord: 'nac'};
+			var color = 0;
+			var key = frequency;
+
+			switch(frequency){
+				case 17:
+				case 27:
+				case 55:
+				case 110:
+				case 220:
+				case 440:
+				case 880:
+
+				key = 'A';
+				color = '#FBF5AD';
+				break;
+
+				case 29:
+				case 58:
+				case 116:
+				case 233:
+				case 466:
+				case 932:
+
+				key = 'A#';
+				color = '#02F3FC';
+				break;	
+
+				case 30:
+				case 61:
+				case 123:
+				case 246:
+				case 493:
+				case 987:
+
+				key = 'B';
+				color = '#DBC0F4';
+				break;
+
+				case 16:
+				case 32:
+				case 65:
+				case 130:
+				case 261:
+				case 523:
+
+				key = 'C';
+				color = '#FDCB03';
+				break;
+
+				case 34:
+				case 69:
+				case 138:
+				case 277:
+				case 554:
+
+				key = 'C#';
+				color = '#34034B';
+				break;
+
+				case 18:
+				case 36:
+				case 73:
+				case 146:
+				case 293:
+				case 587:
+
+				key = 'D';
+				color = '#03B3FD';
+				break;
+
+				case 19:
+				case 38:
+				case 77:
+				case 155:
+				case 311:
+				case 622:
+
+				key = 'D#';
+				color = '#F43806';
+				break;
+
+				case 20:
+				case 41:
+				case 82:
+				case 164:
+				case 329:
+				case 659:
+
+				key = 'E';
+				color = '#7C377C';
+				break;
+
+				case 21:
+				case 43:
+				case 87:
+				case 174:
+				case 349:
+				case 698:
+
+				key = 'F';
+				color = '#003D09';
+				break;
+
+				case 23:
+				case 46:
+				case 92:
+				case 185:
+				case 369:
+				case 739:
+
+				key = 'F#';
+				color = '#035845';
+				break;
+
+				case 24:
+				case 49:
+				case 98:
+				case 196:
+				case 392:
+				case 783:
+
+				key = 'G';
+				color = '#FC0202';
+				break;
+
+				case 25:
+				case 51:
+				case 103:
+				case 207:
+				case 415:
+				case 830:
+
+				key = 'G#'
+				color = '#10186A'
+				break;
+
+			}
+
+			chordObj.color = color;
+			chordObj.chord = key;
+
+			return chordObj;
+
+		}
+
+
+		
+
+		function setSaveImage() {
+			var dataUrl = canvas.toDataURL();
+			//console.log(dataUrl);
+			var img = document.createElement('img');
+			img.style.width = '150px';
+			img.style.height = '150px';
+			img.className = 'imgHolder';
+			var holder = document.getElementById('imgHistory');
+
+			img.src = dataUrl;
+			holder.appendChild(img);
+			//var imgHolder = document.getElementById('imgHolder');
+			//imgHolder.src = dataUrl;
+		}
+
+		function clearCanvas(){
+			cctx.clearRect(0,0, canvas.width, canvas.height);
+		}
+
+		function renderFrame() {
+		     var raf = requestAnimationFrame(renderFrame);
+		     // update data in frequencyData
+		     //8 bit
+		     //analyser.getByteFrequencyData(frequencyData);
+
+		     //32 bit
+		     analyser.getFloatFrequencyData(frequencyData);
+		     // render frame based on values in frequencyData
+		     for(var i = 0; i < frequencyData.length; i++){
+
+
+			    //console.log(Math.abs(Math.createMediaElementSource(frequencyData[i])));
+			     
+			     //colorToUse = color.replace('0', Math.floor(Math.abs(frequencyData[i])));
+			     //var chord = getChord(Math.abs(Math.floor(frequencyData[i])));
+
+			     var chord = getChord2(Math.abs(Math.floor(frequencyData[i])));
+			     colorToUse = chord.color;
+
+			     //console.log(chord);
+			     //drawRectangle("rgb(150, 100," + frequencyData[0] + ")");
+			     drawRectangle(colorToUse);
+
+			     //drawRectangle("rgb(150, 100, 200)");
+			     //console.log("x / y", x ,y);
+			     if(x > canvasWidth){
+			     	x = 0;
+			     	y += h + margin;
+			     }else {
+			     	x += w + margin;
+			     }
+
+			     if(y > canvasHeight) {
+			     	setSaveImage();
+			     	//clearCanvas();
+			     	x = 0;
+			     	y = 0;
+			     }
+
+			     if(Math.abs(Math.floor(frequencyData[i])) == 892){
+			     	audio.pause();
+			     	cancelAnimationFrame(raf);
+
+			     }
+
+			 }
+
+			 //console.log(ctx.state);
+
+		     //canvas.style.backgroundColor = "rgb(150, 100," + frequencyData[0] + ")";
+		  }
+		  //audio.start();
+		  //renderFrame();
+		  					
+	}
+
+
+
+</script>
+</body>
+</html>
